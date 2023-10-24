@@ -24,8 +24,8 @@ app.use(cors({
     origin: process.env.CLIENT_URL
 }));
 
-const root = path.join(__dirname, '../../var/www/build');
-app.use(express.static(root));
+// const root = path.join(__dirname, '../../var/www/build');
+// app.use(express.static(root));
 
 // app.use('/', (req, res, next) => {
 //     // res.setHeader(
