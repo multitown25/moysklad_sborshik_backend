@@ -1,0 +1,2 @@
+adminlog;adminpass
+adminlog1;adminpass1
