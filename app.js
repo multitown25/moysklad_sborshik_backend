@@ -41,6 +41,17 @@ app.use(cors({
 
 app.use(express.static(path.join(__dirname, '../../../var/www/build')));
 
+app.use('/', (req, res, next) => {
+    res.setHeader(
+        'Access-Control-Allow-Origin',
+        'http://77.246.157.92'
+    );
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'Content-Type'
+    );
+    next();
+})
 app.use('/api', router);
 
 app.use('*', (req, res, next) => {
