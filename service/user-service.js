@@ -62,6 +62,12 @@ class UserService {
         await tokenService.saveToken(userDto.id, tokens.refreshToken);
         return {...tokens, user: userDto}
     }
+
+    // async getUserById(userId) {
+    //     const user = await UserModel.findById({userId});
+    //     const userDto = new UserDto(user);
+    //     return {user: userDto};
+    // }
 }
 
 module.exports = new UserService();

@@ -23,7 +23,7 @@ router.post('/images', authMiddleware, orderController.getImages);
 router.post('/img', authMiddleware, orderController.getImage);
 router.get('/bundle/:id/components', authMiddleware, orderController.getBundleComponents);
 router.get('/ordersinwork', authMiddleware, orderController.getAllOrdersInWork);
-router.get('/ordersinwork/:userId', authMiddleware, orderController.getOrderByUser); // getOrderInWorkByUser  
+router.get('/ordersinwork/:userEmail', authMiddleware, orderController.getOrderByUser); // getOrderInWorkByUser  
 router.post('/orderinwork/:id', authMiddleware, orderController.setOrderInWork);
 router.delete('/orderinwork/:id', authMiddleware, orderController.removeOrderFromWork);
 

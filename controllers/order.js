@@ -9,7 +9,7 @@ const states = new Map([
 class OrderController {
     async getAllOrders(req, res, next) {
         try {
-            const url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder?filter=state.name=НА СБОРКЕ';
+            const url = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder?filter=state.name=TEST STATUS';
             const result = await $api.get(url);
             res.json(result.data.rows);
         } catch (error) {
@@ -141,8 +141,8 @@ class OrderController {
     async getOrderByUser(req, res, next) {
         try {
             console.log(req.params)
-            const userId = req.params.userId;
-            const order = await OrderModel.findOne({user: userId});
+            const userEmail = req.params.userEmail;
+            const order = await OrderModel.findOne({userEmail: userEmail});
             res.json(order);
         } catch (error) {
             // console.log("ERROR")
@@ -153,8 +153,9 @@ class OrderController {
     async setOrderInWork(req, res, next) {
         try {
             const orderId = req.params.id;
-            const userId = req.body.userId;
-            const orderData = await OrderModel.create({user: userId, orderId});
+            const userEmail = req.body.userEmail;
+            const orderName = req.body.orderName;
+            const orderData = await OrderModel.create({userEmail: userEmail, orderId, order: orderName});
             res.json(orderData);
         } catch (error) {
             next(error);
