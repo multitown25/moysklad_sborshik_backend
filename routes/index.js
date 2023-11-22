@@ -26,5 +26,6 @@ router.get('/ordersinwork', authMiddleware, orderController.getAllOrdersInWork);
 router.get('/ordersinwork/:userEmail', authMiddleware, orderController.getOrderByUser); // getOrderInWorkByUser  
 router.post('/orderinwork/:id', authMiddleware, orderController.setOrderInWork);
 router.delete('/orderinwork/:id', authMiddleware, orderController.removeOrderFromWork);
+router.post('/orders/:id/changebody', authMiddleware, orderController.changeOrderBody);
 
 module.exports = router

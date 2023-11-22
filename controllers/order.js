@@ -126,6 +126,30 @@ class OrderController {
         }
     }
 
+    async changeOrderBody(req, res, next) {
+        try {
+            console.log(req.params)
+            const orderId = req.params.id;
+            const userEmail = req.body.userEmail
+            const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${orderId}`;
+            console.log(url);
+            const attributeSborshik = await $api.get(url).then(data => data.data.attributes.find(item => item.name === "Сборщик").meta);
+            console.log(attributeSborshik)
+            const result = await $api.put(url, {
+                attributes: [
+                    {
+                        meta: attributeSborshik,
+                        value: userEmail
+                    }
+                ]
+            });
+            res.json(result.data);
+        } catch (error) {
+            // console.log("ERROR")
+            next(error);
+        }
+    }
+
     async getAllOrdersInWork(req, res, next) {
         try {
             console.log(req.params)
