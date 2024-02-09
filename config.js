@@ -1,9 +1,10 @@
+require('dotenv').config();
 const config = {
     db: {
-        host: '94.180.255.226',
-            user: 'ram',
-            password: 'sql%RAM777',
-            database: 'DBFLX_V2.1',
+        host: process.env.SERVER_IP,
+            user: process.env.MYSQL_USERNAME,
+            password: process.env.MYSQL_PASSWORD,
+            database: process.env.DATABASE_NAME,
             connectTimeout: 60000
     }
 }
