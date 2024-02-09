@@ -24,6 +24,7 @@ app.use(cors({
     origin: process.env.CLIENT_URL
 }));
 
+
 // const root = path.join(__dirname, '../../var/www/build');
 // app.use(express.static(root));
 
@@ -54,9 +55,9 @@ app.use(cors({
 // });
 app.use('/api', router);
 
-// app.use('*', (req, res, next) => {
-//     res.sendFile(path.resolve(__dirname, '../../../var/www/build', 'index.html'));
-//   });
+app.use('*', (req, res, next) => {
+    res.sendFile(path.resolve(__dirname, '../../../../var/www/build', 'index.html'));
+});
 
 app.use(errorMiddleware);
 
@@ -69,7 +70,8 @@ const start = async () => {
         app.listen(PORT, () => console.log(`Server started on PORT = ${PORT}`))
     } catch (e) {
         console.log(e);
+        console.log(e?.data);
     }
 }
 
-start()
+start();

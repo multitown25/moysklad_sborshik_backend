@@ -6,15 +6,14 @@ const authMiddleware = require('../middlewares/auth-middleware');
 
 const router = express.Router()
 
-router.post('/registration', 
-        body('email').isEmail(),
+router.post('/registration',
         body('password').isLength({min: 3, max: 32}),
         authController.registration);
 
 router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 router.get('/refresh', authController.refresh);
-router.get('/orders', authMiddleware, orderController.getAllOrders);
+router.post('/orders', authMiddleware, orderController.getAllOrders);
 router.get('/orders/:id', authMiddleware, orderController.getOrderById);
 router.get('/orders/:id/positions', authMiddleware, orderController.getPositionsByOrderId);
 router.post('/orders/:id', authMiddleware, orderController.changeOrderStatus);
