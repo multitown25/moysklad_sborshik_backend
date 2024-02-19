@@ -31,13 +31,7 @@ class OrderController {
             const query = `SELECT customerorder.id, customerorder.name, customerorder.created, deliver.value 'Способ доставки NEW', customerorder.description FROM customerorder LEFT JOIN customerorder_attributes deliver ON deliver.customerorder_id = customerorder.id and deliver.name = 'Способ доставки NEW' JOIN states on states.id = customerorder.state JOIN store on store.id = customerorder.store WHERE store.name = 'Казань, склад А' AND states.name = '${neededStatus}'`
             const connection = await mysql.createConnection(config.db);
             const [results, fields] = await connection.execute(query);
-            // const neededStatus = req.body.status;
-            // console.log(neededStatus);
-            // const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder?filter=state.name=${neededStatus}`;
-            // const result = await $api.get(url);
-            // requestCounter++;
-            // await DoNeedTimeout();
-            // res.json(result.data.rows);
+
             res.json(results)
         } catch (error) {
             next(error);
@@ -73,21 +67,11 @@ class OrderController {
                 }
 
                 order.positions = order.positions.filter(item => item.name != "Доставка");
-                // console.log(order.positions);
                 
             } else {
                 order = null;
             }
-
-            // console.log(req.params)
-            // const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${req.params['id']}?expand=positions.meta.href`;
-            // console.log("URL");
-            // console.log(url)
-            // const result = await $api.get(url);
-            // requestCounter++;
-            // await DoNeedTimeout();
-            // res.json(result.data);
-            
+          
             console.log(order);
             res.json(order);
         } catch (error) {
@@ -95,84 +79,84 @@ class OrderController {
         }
     }
 
-    async getPositionsByOrderId(req, res, next) {
-        try {
-            console.log(req.params)
-            const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${req.params['id']}/positions`;
-            console.log("URL");
-            console.log(url)
-            const result = await $api.get(url);
-            requestCounter++;
-            await DoNeedTimeout();
-            res.json(result.data);
-        } catch (error) {
-            next(error);
-        }
-    }
+    // async getPositionsByOrderId(req, res, next) {
+    //     try {
+    //         console.log(req.params)
+    //         const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${req.params['id']}/positions`;
+    //         console.log("URL");
+    //         console.log(url)
+    //         const result = await $api.get(url);
+    //         requestCounter++;
+    //         await DoNeedTimeout();
+    //         res.json(result.data);
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
 
-    async getPosition(req, res, next) {
-        try {
-            console.log(req.params)
-            const url = req.params['href'];
-            console.log("URL");
-            console.log(url)
-            const result = await $api.get(url);
-            requestCounter++;
-            await DoNeedTimeout();
-            res.json(result.data);
-        } catch (error) {
-            next(error);
-        }
-    }
+    // async getPosition(req, res, next) {
+    //     try {
+    //         console.log(req.params)
+    //         const url = req.params['href'];
+    //         console.log("URL");
+    //         console.log(url)
+    //         const result = await $api.get(url);
+    //         requestCounter++;
+    //         await DoNeedTimeout();
+    //         res.json(result.data);
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
 
-    async getImages(req, res, next) {
-        try {
-            console.log(req.params)
-            const url = req.body.imgURL;
-            console.log("GET IMAGES");
-            console.log(url)
-            const result = await $api.get(url);
-            requestCounter++;
-            await DoNeedTimeout();
-            res.json(result.data);
-        } catch (error) {
-            // console.log("ERROR")
-            next(error);
-        }
-    }
+    // async getImages(req, res, next) {
+    //     try {
+    //         console.log(req.params)
+    //         const url = req.body.imgURL;
+    //         console.log("GET IMAGES");
+    //         console.log(url)
+    //         const result = await $api.get(url);
+    //         requestCounter++;
+    //         await DoNeedTimeout();
+    //         res.json(result.data);
+    //     } catch (error) {
+    //         // console.log("ERROR")
+    //         next(error);
+    //     }
+    // }
 
-    async getImage(req, res, next) {
-        try {
-            console.log(req.params)
-            const url = req.body.imgURL;
-            console.log("GET IMAGE");
-            // console.log(url)
-            const result = await $api.get(url);
-            requestCounter++;
-            await DoNeedTimeout();
-            res.json(result.data);
-        } catch (error) {
-            // console.log("ERROR")
-            next(error);
-        }
-    }
+    // async getImage(req, res, next) {
+    //     try {
+    //         console.log(req.params)
+    //         const url = req.body.imgURL;
+    //         console.log("GET IMAGE");
+    //         // console.log(url)
+    //         const result = await $api.get(url);
+    //         requestCounter++;
+    //         await DoNeedTimeout();
+    //         res.json(result.data);
+    //     } catch (error) {
+    //         // console.log("ERROR")
+    //         next(error);
+    //     }
+    // }
 
-    async getBundleComponents(req, res, next) {
-        try {
-            console.log(req.params)
-            const bundleId = req.params.id;
-            console.log("GET BUNDLE COMPONENTS");
-            const url = `https://api.moysklad.ru/api/remap/1.2/entity/bundle/${bundleId}/components?expand=assortment.meta`
-            // console.log(url)
-            const result = await $api.get(url);
-            requestCounter++;
-            await DoNeedTimeout();
-            res.json(result.data);
-        } catch (error) {
-            // console.log("ERROR")
-            next(error);
-        }
-    }
+    // async getBundleComponents(req, res, next) {
+    //     try {
+    //         console.log(req.params)
+    //         const bundleId = req.params.id;
+    //         console.log("GET BUNDLE COMPONENTS");
+    //         const url = `https://api.moysklad.ru/api/remap/1.2/entity/bundle/${bundleId}/components?expand=assortment.meta`
+    //         // console.log(url)
+    //         const result = await $api.get(url);
+    //         requestCounter++;
+    //         await DoNeedTimeout();
+    //         res.json(result.data);
+    //     } catch (error) {
+    //         // console.log("ERROR")
+    //         next(error);
+    //     }
+    // }
 
     async changeOrderStatus(req, res, next) {
         try {
