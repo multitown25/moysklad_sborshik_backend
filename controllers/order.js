@@ -79,85 +79,6 @@ class OrderController {
         }
     }
 
-    // async getPositionsByOrderId(req, res, next) {
-    //     try {
-    //         console.log(req.params)
-    //         const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${req.params['id']}/positions`;
-    //         console.log("URL");
-    //         console.log(url)
-    //         const result = await $api.get(url);
-    //         requestCounter++;
-    //         await DoNeedTimeout();
-    //         res.json(result.data);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
-    // async getPosition(req, res, next) {
-    //     try {
-    //         console.log(req.params)
-    //         const url = req.params['href'];
-    //         console.log("URL");
-    //         console.log(url)
-    //         const result = await $api.get(url);
-    //         requestCounter++;
-    //         await DoNeedTimeout();
-    //         res.json(result.data);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
-    // async getImages(req, res, next) {
-    //     try {
-    //         console.log(req.params)
-    //         const url = req.body.imgURL;
-    //         console.log("GET IMAGES");
-    //         console.log(url)
-    //         const result = await $api.get(url);
-    //         requestCounter++;
-    //         await DoNeedTimeout();
-    //         res.json(result.data);
-    //     } catch (error) {
-    //         // console.log("ERROR")
-    //         next(error);
-    //     }
-    // }
-
-    // async getImage(req, res, next) {
-    //     try {
-    //         console.log(req.params)
-    //         const url = req.body.imgURL;
-    //         console.log("GET IMAGE");
-    //         // console.log(url)
-    //         const result = await $api.get(url);
-    //         requestCounter++;
-    //         await DoNeedTimeout();
-    //         res.json(result.data);
-    //     } catch (error) {
-    //         // console.log("ERROR")
-    //         next(error);
-    //     }
-    // }
-
-    // async getBundleComponents(req, res, next) {
-    //     try {
-    //         console.log(req.params)
-    //         const bundleId = req.params.id;
-    //         console.log("GET BUNDLE COMPONENTS");
-    //         const url = `https://api.moysklad.ru/api/remap/1.2/entity/bundle/${bundleId}/components?expand=assortment.meta`
-    //         // console.log(url)
-    //         const result = await $api.get(url);
-    //         requestCounter++;
-    //         await DoNeedTimeout();
-    //         res.json(result.data);
-    //     } catch (error) {
-    //         // console.log("ERROR")
-    //         next(error);
-    //     }
-    // }
-
     async changeOrderStatus(req, res, next) {
         try {
             console.log(req.params)
@@ -194,9 +115,7 @@ class OrderController {
             const userEmail = req.body.userEmail
             const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${orderId}`;
             console.log(url);
-            // const attributeSborshik = await $api.get(url).then(data => data.data.attributes.find(item => item.name === "Сборщик").meta);
-            // console.log("ATTRIBUTE SBORSHIK");
-            // console.log(attributeSborshik)
+
             const result = await $api.put(url, {
                 attributes: [
                     {
