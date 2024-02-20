@@ -14,7 +14,7 @@ router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 router.get('/refresh', authController.refresh);
 router.post('/orders', authMiddleware, orderController.getAllOrders);
-router.get('/orders/:id', authMiddleware, orderController.getOrderById);
+router.get('/orders/:id', authMiddleware, orderController.getOrderById); // cash
 router.post('/orders/:id', authMiddleware, orderController.changeOrderStatus);
 router.get('/ordersinwork', authMiddleware, orderController.getAllOrdersInWork);
 router.get('/ordersinwork/:userEmail', authMiddleware, orderController.getOrderByUser); // getOrderInWorkByUser  

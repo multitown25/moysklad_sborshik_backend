@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const redis = require('redis');
 const cookieParser = require('cookie-parser');
 const router = require('./routes/index');
 const errorMiddleware = require('./middlewares/error-middleware');
@@ -33,7 +34,15 @@ const start = async () => {
         await mongoose.connect(process.env.DB_URL, {
             useNewUrlParser: true,
             useUnifiedTopology: true
+        });
+
+        const redisClient = redis.createClient();
+        redisClient.on('error', err => {
+            console.log('Redis Client Error', err);
         })
+        redisClient.on('ready', () => {console.log('Redis is ready!')});
+        await redisClient.connect();
+        await redisClient.ping();
         app.listen(PORT, () => console.log(`Server started on PORT = ${PORT}`))
     } catch (e) {
         console.log(e);
