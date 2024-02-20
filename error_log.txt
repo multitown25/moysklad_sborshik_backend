@@ -3391,3 +3391,4 @@
 {"date":"08.02.2024, 11:04:33","errors":[],"message":"Пользователь не авторизован","status":401}
 {"date":"08.02.2024, 14:52:57","errors":[],"message":"Неверный пароль","status":400}
 {"date":"09.02.2024, 10:58:17","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"20.02.2024, 16:20:43","errors":{"email":{"name":"ValidatorError","message":"Path `email` is required.","properties":{"message":"Path `email` is required.","type":"required","path":"email"},"kind":"required","path":"email"}},"message":"User validation failed: email: Path `email` is required."}

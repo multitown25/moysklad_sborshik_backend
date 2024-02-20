@@ -1,6 +1,6 @@
-require('dotenv').config();
 const express = require('express');
 const path = require('path');
+require('dotenv').config({path: __dirname + '/.env'});
 const cors = require('cors');
 const mongoose = require('mongoose');
 const redis = require('redis');
