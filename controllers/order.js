@@ -31,7 +31,6 @@ class OrderController {
             const query = `SELECT customerorder.id, customerorder.name, customerorder.created, deliver.value 'Способ доставки NEW', customerorder.description FROM customerorder LEFT JOIN customerorder_attributes deliver ON deliver.customerorder_id = customerorder.id and deliver.name = 'Способ доставки NEW' JOIN states on states.id = customerorder.state JOIN store on store.id = customerorder.store WHERE store.name = 'Казань, склад А' AND states.name = '${neededStatus}'`
             const connection = await mysql.createConnection(config.db);
             const [results, fields] = await connection.execute(query);
-            console.log(results);
 
             res.json(results)
         } catch (error) {
