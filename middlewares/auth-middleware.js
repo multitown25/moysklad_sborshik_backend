@@ -18,6 +18,8 @@ module.exports = function (req, res, next) {
             return next(ApiError.UnauthorizedError());
         }
 
+        // console.log('FROM AUTH-MIDDLEWARE', userData);
+
         req.user = userData;
         next();
     } catch (e) {

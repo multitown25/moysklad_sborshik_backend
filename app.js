@@ -3,7 +3,6 @@ const path = require('path');
 require('dotenv').config({path: __dirname + '/.env'});
 const cors = require('cors');
 const mongoose = require('mongoose');
-const redis = require('redis');
 const cookieParser = require('cookie-parser');
 const router = require('./routes/index');
 const errorMiddleware = require('./middlewares/error-middleware');
@@ -36,13 +35,6 @@ const start = async () => {
             useUnifiedTopology: true
         });
 
-        const redisClient = redis.createClient();
-        redisClient.on('error', err => {
-            console.log('Redis Client Error', err);
-        })
-        redisClient.on('ready', () => {console.log('Redis is ready!')});
-        await redisClient.connect();
-        await redisClient.ping();
         app.listen(PORT, () => console.log(`Server started on PORT = ${PORT}`))
     } catch (e) {
         console.log(e);

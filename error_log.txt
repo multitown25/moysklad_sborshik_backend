@@ -3392,3 +3392,79 @@
 {"date":"08.02.2024, 14:52:57","errors":[],"message":"Неверный пароль","status":400}
 {"date":"09.02.2024, 10:58:17","errors":[],"message":"Пользователь не авторизован","status":401}
 {"date":"20.02.2024, 16:20:43","errors":{"email":{"name":"ValidatorError","message":"Path `email` is required.","properties":{"message":"Path `email` is required.","type":"required","path":"email"},"kind":"required","path":"email"}},"message":"User validation failed: email: Path `email` is required."}
+{"date":"20.02.2024, 17:05:38","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"20.02.2024, 17:05:57","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"20.02.2024, 17:06:01","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 15:08:27","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"21.02.2024, 15:08:38","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 16:12:26","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"21.02.2024, 16:12:41","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 16:41:07","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"21.02.2024, 17:11:15","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"21.02.2024, 17:11:20","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 17:11:28","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 17:11:31","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 17:11:32","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 17:11:36","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"21.02.2024, 17:11:37","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 17:11:39","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 17:11:54","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"21.02.2024, 17:12:00","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 11:25:10","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 11:25:27","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 11:25:29","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 11:27:09","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 11:29:40","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 11:29:43","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 12:02:11","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 12:02:14","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 12:02:20","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 12:02:44","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 12:31:44","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 12:31:47","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 15:18:23","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 15:46:05","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 15:46:07","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 15:46:08","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 15:47:38","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 15:47:40","errors":[],"message":"Пользователь не авторизован","status":401}
+{"date":"22.02.2024, 15:47:42","errors":[],"message":"Пользователь с таким email не найден","status":400}
+{"date":"22.02.2024, 15:50:00","errors":[],"message":"Пользователь с почтовым адресом Олег уже существует","status":400}
+{"date":"22.02.2024, 16:32:36","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 16:32:49","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 16:32:52","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 16:32:55","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 16:37:34","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 16:39:32","errors":{"positions":{"name":"ValidatorError","message":"Path `positions` is required.","properties":{"message":"Path `positions` is required.","type":"required","path":"positions"},"kind":"required","path":"positions"}},"message":"User validation failed: positions: Path `positions` is required."}
+{"date":"22.02.2024, 16:39:59","errors":{"positions":{"name":"ValidatorError","message":"Path `positions` is required.","properties":{"message":"Path `positions` is required.","type":"required","path":"positions"},"kind":"required","path":"positions"}},"message":"User validation failed: positions: Path `positions` is required."}
+{"date":"22.02.2024, 16:40:01","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 16:40:04","errors":{"positions":{"name":"ValidatorError","message":"Path `positions` is required.","properties":{"message":"Path `positions` is required.","type":"required","path":"positions"},"kind":"required","path":"positions"}},"message":"User validation failed: positions: Path `positions` is required."}
+{"date":"22.02.2024, 17:02:33","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:02:35","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:04:03","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:04:33","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:04:36","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:04:47","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:05:39","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:05:41","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:06:08","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:07:07","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:07:14","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:07:16","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:07:23","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:08:13","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:08:45","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:09:24","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:09:24","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:09:36","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:10:04","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:10:29","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:10:44","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:10:45","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:11:21","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:11:22","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:11:37","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:11:38","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:11:57","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:12:13","message":"Cannot read properties of null (reading 'email')"}
+{"date":"22.02.2024, 17:12:14","message":"Cannot read properties of null (reading 'email')"}

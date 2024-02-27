@@ -7,7 +7,11 @@ const UserSchema = new Schema({
         required: true},
     password: {
         type: String, 
-        required: true}
+        required: true},
+    position: {
+        type: String,
+        required: true
+    }
 })
 
 module.exports = model('User', UserSchema);

@@ -16,7 +16,7 @@ router.get('/refresh', authController.refresh);
 router.post('/orders', authMiddleware, orderController.getAllOrders);
 router.get('/orders/:id', authMiddleware, orderController.getOrderById); // cash
 router.post('/orders/:id', authMiddleware, orderController.changeOrderStatus);
-router.get('/ordersinwork', authMiddleware, orderController.getAllOrdersInWork);
+router.get('/ordersinwork/:type', authMiddleware, orderController.getAllOrdersInWork);
 router.get('/ordersinwork/:userEmail', authMiddleware, orderController.getOrderByUser); // getOrderInWorkByUser  
 router.post('/orderinwork/:id', authMiddleware, orderController.setOrderInWork);
 router.delete('/orderinwork/:id', authMiddleware, orderController.removeOrderFromWork);
