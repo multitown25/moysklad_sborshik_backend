@@ -229,7 +229,7 @@ class OrderController {
                     console.log(results);
 
                     for (let i = 0; i < results.length; i++) {
-                        if (results[i].pathName.toLowerCase().includes('масла') && !results[i].pathName.toLowerCase().endsWith('Нейтрализатор запаха')) {
+                        if (results[i].pathName.toLowerCase().includes('масла') && !results[i].pathName.toLowerCase().endsWith('нейтрализатор запаха')) {
                             newOrder.selectedPositions[i] = true
                         }
                     }
