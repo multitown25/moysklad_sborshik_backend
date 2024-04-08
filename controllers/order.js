@@ -321,6 +321,12 @@ class OrderController {
                 }
 
                 order.positions = order.positions.filter(item => item.name != "Доставка");
+                order.positions = order.positions.map(item => {
+                    if (item.article.includes('ММБ')) {
+                        item.article += ` (${item.name})`;
+                    }
+                    return item;
+                });
 
             } else {
                 order = null;
