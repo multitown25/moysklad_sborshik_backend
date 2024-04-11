@@ -307,12 +307,13 @@ class OrderController {
                         return {
                             id: item.assortmentId,
                             name: item.assortmentName,
-                            article: item.article + item.multiplicity,
+                            article: item.article,
                             quantity: item.quantity,
                             barcode: item.ean13,
                             type: item.type,
                             image: item.miniature,
-                            pathName: item.pathName
+                            pathName: item.pathName,
+                            multiplicity: item.multiplicity
                         }
                     })
                 }
@@ -321,6 +322,9 @@ class OrderController {
                 order.positions = order.positions.map(item => {
                     if (item.article.includes('ММБ') || item.article.includes('ПВ')) {
                         item.article += ` (${item.name})`;
+                    }
+                    if (item.multiplicity) {
+                        item.article += ` кратность ${item.multiplicity}`
                     }
                     return item;
                 });
