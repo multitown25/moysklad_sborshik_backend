@@ -306,8 +306,8 @@ class OrderController {
                     positions: results.map(item => {
                         return {
                             id: item.assortmentId,
-                            name: item.assortmentName + item.multiplicity,
-                            article: item.article,
+                            name: item.assortmentName,
+                            article: item.article + item.multiplicity,
                             quantity: item.quantity,
                             barcode: item.ean13,
                             type: item.type,
