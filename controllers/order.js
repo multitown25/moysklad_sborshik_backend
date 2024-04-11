@@ -309,7 +309,7 @@ class OrderController {
                     positions: results.map(item => {
                         return {
                             id: item.assortmentId,
-                            name: item.assortmentName,
+                            name: item.assortmentName + item.multiplicity,
                             article: item.article,
                             quantity: item.quantity,
                             barcode: item.ean13,
@@ -322,7 +322,7 @@ class OrderController {
 
                 order.positions = order.positions.filter(item => item.name != "Доставка");
                 order.positions = order.positions.map(item => {
-                    if (item.article.includes('ММБ')) {
+                    if (item.article.includes('ММБ') || item.article.includes('ПВ')) {
                         item.article += ` (${item.name})`;
                     }
                     return item;
