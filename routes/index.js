@@ -14,7 +14,7 @@ router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 router.post('/orders/changestatus/:id', authMiddleware, orderController.changeOrderStatus);
 router.post('/ordersinwork', authMiddleware, orderController.getOrdersByUser); // getOrderInWorkByUser
-router.post('/orderinwork/:id', authMiddleware, orderController.setOrderInWork);
+// router.post('/orderinwork/:id', authMiddleware, orderController.setOrderInWork);
 router.post('/orders/changebody/:id', authMiddleware, orderController.changeOrderBody);
 router.post('/orders/waitinglist', authMiddleware, orderController.addToWaitingList);
 router.post('/orders/getnew', authMiddleware, orderController.getNewOrder);
