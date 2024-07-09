@@ -24,7 +24,7 @@ class UserService {
         return {...tokens, user: userDto}
     }
 
-    async login(email, password) {
+    async login(email, password, position) {
         const user = await UserModel.findOne({email})
         if (!user) {
             throw ApiError.BadRequest('Пользователь с таким email не найден')
@@ -33,6 +33,12 @@ class UserService {
         if (!isPassEquals) {
             throw ApiError.BadRequest('Неверный пароль');
         }
+        // next 2 strings are for chose position
+        if (email !== 'admin' && position !== '') {
+            user.position = position;
+            await user.save();
+        }
+
         const userDto = new UserDto(user);
         const tokens = tokenService.generateTokens({...userDto});
 
@@ -64,7 +70,7 @@ class UserService {
 
     async getAllUsers() {
         const allUsers = await UserModel.find();
-        return allUsers.map(item => item.email);
+        return allUsers;
     }
 }
 
