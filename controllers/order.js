@@ -4,45 +4,52 @@ const config = require('../config');
 const mysql = require('mysql2/promise');
 const redisClient = require('../service/redis-client');
 const UserService = require('../service/user-service');
+const { STATE_BY_USER_POSITION_FOR_WORK, STATE_BY_USER_POSITION_IN_WORK, ORDER_STATES } = require('../moysklad/data');
 // let ALLOW_TO_GET_NEW_ORDER = true;
 // let GIVE_NEW_ORDER = true;
 
-const STATES = new Map([
-    ['Собрано', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/7d385378-49c9-11ec-0a80-089e00198b92'],
-    ['Корректировка', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52efe0-41ff-11ec-0a80-02d0001cfb4f'],
-    ['Упаковано', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4f90421c-11a3-11ef-0a80-063a00036159'],
-    ['Розлив', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/1cfb1e34-f642-11ee-0a80-00fc000840c9']
-]);
+// const STATES_DEMANDS = new Map([
+//     ['Собрано', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/7d385378-49c9-11ec-0a80-089e00198b92'],
+//     ['Корректировка', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52efe0-41ff-11ec-0a80-02d0001cfb4f'],
+//     ['Упаковано', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4f90421c-11a3-11ef-0a80-063a00036159'],
+//     ['Розлив', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/1cfb1e34-f642-11ee-0a80-00fc000840c9']
+// ]);
+//
+// const STATES_CUSTOMERORDER = new Map([
+//     ['Собрано', 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/states/beaf29eb-b0fd-11ed-0a80-02dc0038a0e5'],
+//     ['Корректировка', 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/states/3ffc2d79-bb34-11ed-0a80-0cd400212101'],
+//     ['Упаковано', 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/states/85a191e0-32cf-11ef-0a80-1672000a4a13']
+// ]);
 
-const STATE_BY_USER_POSITION_FOR_WORK = new Map([
-    ['Сборщик', 'Готов к сборке'],
-    ['Упаковщик', 'Собрано'],
-    ['Разливщик масел', 'Розлив']
-]);
+// const STATE_BY_USER_POSITION_FOR_WORK = new Map([
+//     ['Сборщик', 'Готов к сборке'],
+//     ['Упаковщик', 'Собрано'],
+//     ['Разливщик масел', 'Розлив']
+// ]);
+//
+// const STATE_BY_USER_POSITION_IN_WORK = new Map([
+//     ['Сборщик', 'На сборке'],
+//     ['Упаковщик', 'На упаковке'],
+//     ['Разливщик масел', 'На розливе']
+// ]);
 
-const STATE_BY_USER_POSITION_IN_WORK = new Map([
-    ['Сборщик', 'На сборке'],
-    ['Упаковщик', 'На упаковке'],
-    ['Разливщик масел', 'На розливе']
-]);
+// const USER_FIELD_BY_POSITION = new Map([
+//     ['Сборщик', {
+//         customerOrder: 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/attributes/f1917566-1c0d-11ee-0a80-13cb002a779d',
+//         demand: 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/attributes/8bd7882b-ebfe-11ee-0a80-07750004a8d8'
+//     }],
+//     ['Упаковщик', {
+//         customerOrder: 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/attributes/05de3ee3-1bbc-11ef-0a80-08aa002fc1f8',
+//         demand: 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/attributes/46bbb4eb-0c1f-11ef-0a80-037a0002bd44'
+//     }],
+//     ['Разливщик масел', '']
+// ])
 
-const USER_FIELD_BY_POSITION = new Map([
-    ['Сборщик', {
-        customerOrder: 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/attributes/f1917566-1c0d-11ee-0a80-13cb002a779d',
-        demand: 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/attributes/8bd7882b-ebfe-11ee-0a80-07750004a8d8'
-    }],
-    ['Упаковщик', {
-        customerOrder: 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/attributes/05de3ee3-1bbc-11ef-0a80-08aa002fc1f8',
-        demand: 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/attributes/46bbb4eb-0c1f-11ef-0a80-037a0002bd44'
-    }],
-    ['Разливщик масел', '']
-])
-
-const NEXT_STATE_BY_USER_POSITION = new Map([
-    ['Сборщик', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52eefa-41ff-11ec-0a80-02d0001cfb4c'], // На сборке
-    ['Упаковщик', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52ef52-41ff-11ec-0a80-02d0001cfb4d'], // На упаковке
-    ['Разливщик масел', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52ef9d-41ff-11ec-0a80-02d0001cfb4e'] // Готов к сборке
-])
+// const NEXT_STATE_BY_USER_POSITION = new Map([
+//     ['Сборщик', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52eefa-41ff-11ec-0a80-02d0001cfb4c'], // На сборке
+//     ['Упаковщик', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52ef52-41ff-11ec-0a80-02d0001cfb4d'], // На упаковке
+//     ['Разливщик масел', 'https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52ef9d-41ff-11ec-0a80-02d0001cfb4e'] // Готов к сборке
+// ])
 
 const ORDERS_IN_WORK = 'Orders in work';
 const PACKER_ORDERS = 'Packer orders';
@@ -64,7 +71,6 @@ async function DoNeedTimeout() {
 
 async function _getAllOrders(req) {
     if (req.user.position === "admin") {
-        // const naSborke = await _getAllOrdersDBQuery(STATE_BY_USER_POSITION_FOR_WORK.get("Сборщик"));
         const allOrders = await _getAllOrdersDBQuery('ВСЕ');
         const result = allOrders.map(item => {
             return {
@@ -83,28 +89,28 @@ async function _getAllOrders(req) {
 
 //
 async function _getOrderById(id) {
-    const query = `SELECT demand.id,
-       demand.name,
-       demand.created,
-       deliver.value  AS 'Способ доставки NEW',
-       demand.description,
-       priority.value AS priority,
-       sborshik.value AS sborshik,
-       customerorder.name as customerorderName
-FROM demand
-         LEFT JOIN
-     demand_attributes deliver ON deliver.demand_id = demand.id AND deliver.name = 'Способ доставки NEW'
-         JOIN
-     states ON states.id = demand.state
-         JOIN
-     store ON store.id = demand.store
-         LEFT JOIN
-     demand_attributes priority ON priority.demand_id = demand.id AND priority.name = 'Приоритетно'
-         LEFT JOIN
-     demand_attributes sborshik ON sborshik.demand_id = demand.id AND sborshik.name = 'Сборщик'
-     LEFT JOIN
-        customerorder on demand.customerOrder = customerorder.id
-WHERE demand.id = '${id}'`
+    const query = `SELECT
+    customerorder.id,
+    customerorder.name,
+    customerorder.created,
+    deliver.value AS 'Способ доставки NEW',
+    customerorder.description,
+    priority.value AS priority,
+    sborshik.value AS sborshik
+FROM
+    customerorder
+LEFT JOIN
+    customerorder_attributes deliver ON deliver.customerorder_id = customerorder.id AND deliver.name = 'Способ доставки NEW'
+JOIN
+    states ON states.id = customerorder.state
+JOIN
+    store ON store.id = customerorder.store
+LEFT JOIN
+    customerorder_attributes priority ON priority.customerorder_id = customerorder.id AND priority.name = 'Приоритетно'
+LEFT JOIN
+     customerorder_attributes sborshik ON sborshik.customerorder_id = customerorder.id AND sborshik.name = 'Сборщик'
+WHERE
+    customerorder.id = '${id}'`
 
     const connection = await mysql.createConnection(config.db);
     const [results, fields] = await connection.execute(query);
@@ -118,46 +124,46 @@ WHERE demand.id = '${id}'`
 async function _getAllOrdersDBQuery(status) {
     let query;
     if (status === 'ВСЕ') {
-        query = `SELECT demand.id,
-       demand.name,
-       demand.created,
+        query = `SELECT customerorder.id,
+       customerorder.name,
+       customerorder.created,
        deliver.value  AS 'Способ доставки NEW',
-       demand.description,
-       priority.value AS priority,
-       states.name as state
-FROM demand
-         LEFT JOIN demand_attributes deliver ON deliver.demand_id = demand.id AND deliver.name = 'Способ доставки NEW'
-         JOIN states ON states.id = demand.state
-         JOIN store ON store.id = demand.store
-         LEFT JOIN demand_attributes priority ON priority.demand_id = demand.id AND priority.name = 'Приоритетно'
+       customerorder.description,
+       priority.value AS priority
+FROM customerorder
+         LEFT JOIN customerorder_attributes deliver
+                   ON deliver.customerorder_id = customerorder.id AND deliver.name = 'Способ доставки NEW'
+         JOIN states ON states.id = customerorder.state
+         JOIN store ON store.id = customerorder.store
+         LEFT JOIN customerorder_attributes priority
+                   ON priority.customerorder_id = customerorder.id AND priority.name = 'Приоритетно'
 WHERE store.name = 'Казань, склад А'
-  AND demand.deleted IS NULL
-  AND states.name IN ('Розлив', 'Готов к сборке', 'На сборке', 'Собрано', 'На упаковке', 'Упаковано', 'Корректировка')`
+  AND customerorder.deleted IS NULL
+  AND states.name IN ('НА СБОРКЕ')`
     } else {
-        query = `SELECT demand.id,
-       demand.name,
-       demand.created,
+        query = `SELECT customerorder.id,
+       customerorder.name,
+       max(if(SUBSTRING_INDEX(SUBSTRING_INDEX(customerorder_diff.newValue, '''name'': ''', -1), '''}', 1) in ('Наложенный платеж','ЗАКАЗ ОПЛАЧЕН'),customerorder_audit.moment,null)) as created,
        deliver.value  AS 'Способ доставки NEW',
-       demand.description,
-       priority.value AS priority,
-       sborshik.value AS sborshik,
-       customerorder.name as customerorderName
-FROM demand
+       customerorder.description,
+       priority.value AS priority
+FROM customerorder
          LEFT JOIN
-     demand_attributes deliver ON deliver.demand_id = demand.id AND deliver.name = 'Способ доставки NEW'
+     customerorder_attributes deliver
+     ON deliver.customerorder_id = customerorder.id AND deliver.name = 'Способ доставки NEW'
          JOIN
-     states ON states.id = demand.state
+     states ON states.id = customerorder.state
          JOIN
-     store ON store.id = demand.store
+     store ON store.id = customerorder.store
          LEFT JOIN
-     demand_attributes priority ON priority.demand_id = demand.id AND priority.name = 'Приоритетно'
-         LEFT JOIN
-     demand_attributes sborshik ON sborshik.demand_id = demand.id AND sborshik.name = 'Сборщик'
-     LEFT JOIN
-    customerorder ON demand.customerOrder = customerorder.id
+     customerorder_attributes priority ON priority.customerorder_id = customerorder.id AND priority.name = 'Приоритетно'
+    LEFT join customerorder_audit on customerorder.id = customerorder_audit.customerorder_id
+    LEFT join customerorder_diff on customerorder_audit.id = customerorder_diff.audit_id and customerorder_diff.name = 'state'
 WHERE store.name = 'Казань, склад А'
-  AND demand.deleted IS NULL
-  AND states.name = '${status}'`
+  AND customerorder.deleted IS NULL
+  AND states.name = '${status}'
+
+group by customerorder.id, customerorder.name, deliver.value, customerorder.description, priority.value`
     }
     const connection = await mysql.createConnection(config.db);
     const [results, fields] = await connection.execute(query);
@@ -347,8 +353,7 @@ async function _giveRandomOrder(req) {
         current: true,
         employee: req.user.email,
         selectedPositions: {},
-        priority: newOrder.priority,
-        customerorderName: newOrder.customerorderName
+        priority: newOrder.priority
     };
 }
 
@@ -360,12 +365,11 @@ async function _setOrderInWork(req, newOrder) {
         await redisClient.hSet(ORDERS_IN_WORK, type, JSON.stringify(allOrdersInWorkByPosition));
 
 
-        const url = `https://api.moysklad.ru/api/remap/1.2/entity/demand/${newOrder.id}`;
-        const nextStatus = NEXT_STATE_BY_USER_POSITION.get(req.user.position);
+        const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${newOrder.id}`;
         const result = await $api.put(url, {
             state: {
                 meta: {
-                    href: nextStatus,
+                    href: "https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/states/e8b38a07-ab8e-11ed-0a80-04fb003bf463", // На сборке
                     type: 'state',
                     mediaType: "application/json"
                 }
@@ -407,20 +411,19 @@ async function _setOrderInWork(req, newOrder) {
     }
 }
 
-async function _changeOrderBody(demandId, email, position) {
+async function _changeOrderBody(orderId, email, position) {
     // console.log('changeOrderBody index')
     try {
         // console.log(req.params)
-        const demandUrl = `https://api.moysklad.ru/api/remap/1.2/entity/demand/${demandId}`;
-        const orderUrl = await $api.get(demandUrl).then(data => data.data.customerOrder?.meta?.href);
+        const orderUrl = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${orderId}`;
+        const href = 'https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/attributes/f1917566-1c0d-11ee-0a80-13cb002a779d'; // Доп поле "Сборщик"
         console.log(orderUrl);
 
-        const href = USER_FIELD_BY_POSITION.get(position);
-        const updateDemand = await $api.put(demandUrl, {
+        const updateOrder = await $api.put(orderUrl, {
             attributes: [
                 {
                     meta: {
-                        "href": href.demand,
+                        "href": href,
                         "type": "attributemetadata",
                         "mediaType": "application/json"
                     },
@@ -428,23 +431,6 @@ async function _changeOrderBody(demandId, email, position) {
                 }
             ]
         });
-
-        if (orderUrl) {
-            const updateOrder = await $api.put(orderUrl, {
-                attributes: [
-                    {
-                        meta: {
-                            "href": href.customerOrder,
-                            "type": "attributemetadata",
-                            "mediaType": "application/json"
-                        },
-                        value: email
-                    }
-                ]
-            });
-        } else {
-            console.log('demand does not have customer order')
-        }
 
         // requestCounter++;
         // await DoNeedTimeout();
@@ -500,8 +486,7 @@ class OrderController {
                             current: true,
                             employee: req.user.email,
                             selectedPositions: {},
-                            priority: order.priority,
-                            customerorderName: order.customerorderName
+                            priority: order.priority
                         };
                     });
                 } else {
@@ -512,10 +497,10 @@ class OrderController {
                 // console.log('newOrder', newOrder);
                 // set it to cache if not null
                 if (newOrder) {
-                    const query = `SELECT demand.id           AS 'orderId',
-       demand.name         AS 'orderName',
-       demand.created,
-       demand.description,
+                    const query = `SELECT customerorder.id    AS 'orderId',
+       customerorder.name  AS 'orderName',
+       customerorder.created,
+       customerorder.description,
        deliver.value       AS 'delivery',
        assortment.pathName AS 'pathName',
        pos.assortment      AS 'assortmentId',
@@ -525,9 +510,10 @@ class OrderController {
        assortment.ean13,
        assortment.type,
        assortment.miniature
-FROM demand
-         LEFT JOIN demand_attributes deliver ON deliver.demand_id = demand.id AND deliver.name = 'Способ доставки NEW'
-         JOIN demand_positions pos ON demand.id = pos.demand_id
+FROM customerorder
+         LEFT JOIN customerorder_attributes deliver
+                   ON deliver.customerorder_id = customerorder.id AND deliver.name = 'Способ доставки NEW'
+         JOIN customerorder_positions pos ON customerorder.id = pos.customerorder_id
          LEFT JOIN (SELECT 'product'             AS 'type',
                            product.id,
                            product.name,
@@ -608,7 +594,7 @@ FROM demand
                            ''        AS ean13,
                            ''        AS miniature
                     FROM service) AS assortment ON assortment.id = pos.assortment
-WHERE demand.id = '${newOrder.id}'
+WHERE customerorder.id = '${newOrder.id}'
 ORDER BY article`
                     const connection = await mysql.createConnection(config.db);
                     const [results, fields] = await connection.execute(query);
@@ -676,22 +662,18 @@ ORDER BY article`
         }
     }
 
-    async getDemandsByOrderNumber(req, res, next) {
+    async getOrderByScan(req, res, next) {
         const orderNumber = req.params['orderNumber'].split("o")[1];
         console.log(orderNumber);
         const connection = await mysql.createConnection(config.db);
-        const query = `SELECT demand.id,
-       demand.name,
+        const query = `SELECT customerorder.id,
+       customerorder.name,
        states.name as state
-FROM demand
-    LEFT JOIN
-    customerorder
-    ON
-    demand.customerOrder = customerorder.id
+FROM customerorder
     LEFT JOIN
     states
     ON
-    demand.state = states.id
+    customerorder.state = states.id
 WHERE customerorder.name = '${orderNumber}'`
 
         try {
@@ -723,6 +705,7 @@ WHERE customerorder.name = '${orderNumber}'`
         // console.log('getOrderById index')
         const orderId = req.params['id'];
         console.log('orderId', orderId);
+        const userPosition = req.user.position;
 
         const connection = await mysql.createConnection(config.db);
         try {
@@ -736,265 +719,223 @@ WHERE customerorder.name = '${orderNumber}'`
             });
             await redisClient.hSet(ORDERS_IN_WORK, STATE_BY_USER_POSITION_IN_WORK.get(req.user.position), JSON.stringify(updateCache));
 
-            const query = `SELECT
-    demand.id AS 'demandId',
-    demand.name AS 'demandName',
-    demand.created,
-    demand.description,
-    pinned_docs.value as pinnedDoc,
-    deliver.value AS 'delivery',
-    assortment.pathName AS 'pathName',
-    assortment.extraid AS 'assortmentId',
-    assortment.name AS 'assortmentName',
-    assortment.article,
-    sum(pos.quantity) as quantity,
-    assortment.ean13,
-    assortment.type,
-    assortment.miniature,
-    assortment.multiplicity,
-    customerorder.name as orderName
-FROM
-    demand
-LEFT JOIN
-    demand_attributes pinned_docs
-ON
-    pinned_docs.demand_id = demand.id
-    AND pinned_docs.name = 'Закрывающие документы'
-LEFT JOIN
-    customerorder
-ON
-    customerorder.id = demand.customerOrder
-LEFT JOIN
-    demand_attributes deliver
-ON
-    deliver.demand_id = demand.id
-    AND deliver.name = 'Способ доставки NEW'
+            const query = `SELECT customerorder.id    AS 'orderId',
+       customerorder.name  AS 'orderName',
+       customerorder.created,
+       customerorder.description,
+       pinned_docs.value   as pinnedDoc,
+       deliver.value       AS 'delivery',
+       assortment.pathName AS 'pathName',
+       assortment.extraid  AS 'assortmentId',
+       assortment.name     AS 'assortmentName',
+       assortment.article,
+       sum(pos.quantity)   as quantity,
+       assortment.ean13,
+       assortment.type,
+       assortment.miniature,
+       assortment.multiplicity
+FROM customerorder
+         LEFT JOIN
+     customerorder_attributes pinned_docs
+     ON
+         pinned_docs.customerorder_id = customerorder.id
+             AND pinned_docs.name = 'Закрывающие документы'
+         LEFT JOIN
+     customerorder_attributes deliver
+     ON
+         deliver.customerorder_id = customerorder.id
+             AND deliver.name = 'Способ доставки NEW'
 
-JOIN
-    demand_positions pos
-ON
-    demand.id = pos.demand_id
-JOIN
-    (
-        SELECT
-            'product' AS 'type',
-            product.id,
-            product.id as extraid,
-            product.name,
-            product.pathName,
-            product.article,
-            barcodes.ean13,
-            images.miniature AS miniature,
-            multiplicity.value as multiplicity
-        FROM
-            product
-        LEFT JOIN
-            (
-                SELECT i.product_id, i.miniature
-                FROM images i
-                 JOIN (SELECT product_id, MIN(id) AS min_id
-                       FROM images
-                       GROUP BY product_id) AS min_images ON i.product_id = min_images.product_id AND i.id = min_images.min_id
-
-                    ) AS images
-        ON
-            product.id = images.product_id
-        LEFT JOIN
-            product_attributes multiplicity
-        ON
-            product.id = multiplicity.product_id
-            AND multiplicity.name = 'Кратность заказа'
-        LEFT JOIN
-            barcodes
-        ON
-            product.id = barcodes.product_id
-        UNION ALL
-        SELECT
-            'variant' AS 'type',
-            variant.id,
-            variant.id as extraid,
-            variant.name,
-            product.pathName,
-            IF(MAX(characteristics.value) IS NULL, product.article, CONCAT(product.article, ' ', MAX(characteristics.value))) AS article,
-            barcodes.ean13,
-            images.miniature AS miniature,
-            multiplicity.value as multiplicity
-        FROM
-            variant
-        JOIN
-            product
-        ON
-            product.id = variant.product
-        LEFT JOIN
-            (
-                SELECT i.variant_id, i.miniature
-FROM images i
-         JOIN (SELECT variant_id, MIN(id) AS min_id
-               FROM images
-               GROUP BY variant_id) AS min_images ON i.variant_id = min_images.variant_id AND i.id = min_images.min_id
-
-            ) AS images
-        ON
-            variant.id = images.variant_id
-        LEFT JOIN
-            characteristics
-        ON
-            characteristics.variant_id = variant.id
-        LEFT JOIN
-            barcodes
-        ON
-            variant.id = barcodes.variant_id
-        LEFT JOIN
-            product_attributes multiplicity
-        ON
-            product.id = multiplicity.product_id
-            AND multiplicity.name = 'Кратность заказа'
-        GROUP BY
-            variant.id,
-            variant.name,
-            product.pathName,
-            product.article,
-            barcodes.ean13,
-            images.miniature,
-            multiplicity.value
-        UNION ALL
-        SELECT
-            'bundle' AS 'type',
-            bundle.id,
-            IF(bundle_counts.components_count=1, bundle.id, components_positions.id),
-            IF(bundle_counts.components_count=1, bundle.name, components_positions.name),
-            IF(bundle_counts.components_count=1, bundle.pathName, components_positions.pathName),
-            IF(bundle_counts.components_count=1, bundle.article, components_positions.article),
-            components_positions.ean13,
-            IF(bundle_counts.components_count=1, images.miniature, components_positions.miniature),
-            multiplicity.value as multiplicity
-        FROM
-            bundle
-        LEFT JOIN
-            (
-                SELECT i.bundle_id, i.miniature
-FROM images i
-         JOIN (SELECT bundle_id, MIN(id) AS min_id
-               FROM images
-               GROUP BY bundle_id) AS min_images ON i.bundle_id = min_images.bundle_id AND i.id = min_images.min_id
-
-            ) AS images
-        ON
-            bundle.id = images.bundle_id
-        LEFT JOIN
-            bundle_attributes multiplicity
-        ON
-            bundle.id = multiplicity.bundle_id
-            AND multiplicity.name = 'Кратность заказа'
-        JOIN
-            components
-        ON
-            bundle.id = components.bundle_id
-        JOIN
-            (
-                SELECT
-                    'product' AS 'type',
-                    product.id,
-                    product.name,
-                    product.pathName,
-                    product.article,
-                    barcodes.ean13,
-                    MIN(images.miniature) AS miniature
-                FROM
-                    product
-                LEFT JOIN
-                    images
-                ON
-                    product.id = images.product_id
-                LEFT JOIN
-                    barcodes
-                ON
-                    product.id = barcodes.product_id
-                GROUP BY
-                    'type',
-                    product.id,
-                    product.name,
-                    product.pathName,
-                    product.article,
-                    barcodes.ean13
-                UNION ALL
-                SELECT
-                    'variant' AS 'type',
-                    variant.id,
-                    variant.name,
-                    product.pathName,
-                    IF(MAX(characteristics.value) IS NULL, product.article, CONCAT(product.article, ' ', MAX(characteristics.value))) AS article,
-                    barcodes.ean13,
-                    MIN(images.miniature) AS miniature
-                FROM
-                    variant
-                JOIN
-                    product
-                ON
-                    product.id = variant.product
-                LEFT JOIN
-                    images
-                ON
-                    variant.id = images.variant_id
-                LEFT JOIN
-                    characteristics
-                ON
-                    characteristics.variant_id = variant.id
-                LEFT JOIN
-                    barcodes
-                ON
-                    variant.id = barcodes.variant_id
-                GROUP BY
-                    'type',
-                    variant.id,
-                    variant.name,
-                    product.pathName,
-                    product.article,
-                    barcodes.ean13
-            ) AS components_positions
-        ON
-            components_positions.id = components.assortment
-        LEFT JOIN
-            (
-                SELECT
-                    bundle_id,
-                    COUNT(*) AS components_count
-                FROM
-                    components
-                GROUP BY
-                    bundle_id
-            ) AS bundle_counts
-        ON
-            bundle_counts.bundle_id = bundle.id
-    ) AS assortment
-ON
-    assortment.id = pos.assortment
-WHERE
-    demand.id = '${orderId}'
-GROUP BY
-    demand.id,
-    demand.name,
-    demand.created,
-    demand.description,
-    deliver.value,
-    assortment.pathName,
-    assortment.extraid,
-    assortment.name,
-    assortment.article,
-    assortment.ean13,
-    assortment.type,
-    assortment.miniature,
-    assortment.multiplicity,
-    pinned_docs.value
-ORDER BY
-    article`
+         JOIN
+     customerorder_positions pos
+     ON
+         customerorder.id = pos.customerorder_id
+         LEFT JOIN
+     (SELECT 'product'          AS 'type',
+             product.id,
+             product.id         as extraid,
+             product.name,
+             product.pathName,
+             product.article,
+             barcodes.ean13,
+             images.miniature   AS miniature,
+             multiplicity.value as multiplicity
+      FROM product
+               LEFT JOIN
+           (SELECT images.product_id,
+                   min(images.miniature) as miniature
+            FROM images
+            GROUP BY images.product_id) AS images
+           ON
+               product.id = images.product_id
+               LEFT JOIN
+           product_attributes multiplicity
+           ON
+               product.id = multiplicity.product_id
+                   AND multiplicity.name = 'Кратность заказа'
+               LEFT JOIN
+           barcodes
+           ON
+               product.id = barcodes.product_id
+      UNION ALL
+      SELECT 'variant'                                                    AS 'type',
+             variant.id,
+             variant.id                                                   as extraid,
+             variant.name,
+             product.pathName,
+             IF(MAX(characteristics.value) IS NULL, product.article,
+                CONCAT(product.article, ' ', MAX(characteristics.value))) AS article,
+             barcodes.ean13,
+             images.miniature                                             AS miniature,
+             multiplicity.value                                           as multiplicity
+      FROM variant
+               JOIN
+           product
+           ON
+               product.id = variant.product
+               LEFT JOIN
+           (SELECT images.variant_id,
+                   min(images.miniature) as miniature
+            FROM images
+            GROUP BY images.variant_id) AS images
+           ON
+               variant.id = images.variant_id
+               LEFT JOIN
+           characteristics
+           ON
+               characteristics.variant_id = variant.id
+               LEFT JOIN
+           barcodes
+           ON
+               variant.id = barcodes.variant_id
+               LEFT JOIN
+           product_attributes multiplicity
+           ON
+               product.id = multiplicity.product_id
+                   AND multiplicity.name = 'Кратность заказа'
+      GROUP BY variant.id,
+               variant.name,
+               product.pathName,
+               product.article,
+               barcodes.ean13,
+               images.miniature,
+               multiplicity.value
+      UNION ALL
+      SELECT 'bundle'           AS 'type',
+             bundle.id,
+             IF(bundle_counts.components_count = 1, bundle.id, components_positions.id),
+             IF(bundle_counts.components_count = 1, bundle.name, components_positions.name),
+             IF(bundle_counts.components_count = 1, bundle.pathName, components_positions.pathName),
+             IF(bundle_counts.components_count = 1, bundle.article, components_positions.article),
+             components_positions.ean13,
+             IF(bundle_counts.components_count = 1, images.miniature, components_positions.miniature),
+             multiplicity.value as multiplicity
+      FROM bundle
+               LEFT JOIN
+           (SELECT images.bundle_id,
+                   MIN(images.miniature) AS miniature
+            FROM images
+            GROUP BY images.bundle_id) AS images
+           ON
+               bundle.id = images.bundle_id
+               LEFT JOIN
+           bundle_attributes multiplicity
+           ON
+               bundle.id = multiplicity.bundle_id
+                   AND multiplicity.name = 'Кратность заказа'
+               JOIN
+           components
+           ON
+               bundle.id = components.bundle_id
+               JOIN
+           (SELECT 'product'             AS 'type',
+                   product.id,
+                   product.name,
+                   product.pathName,
+                   product.article,
+                   barcodes.ean13,
+                   MIN(images.miniature) AS miniature
+            FROM product
+                     LEFT JOIN
+                 images
+                 ON
+                     product.id = images.product_id
+                     LEFT JOIN
+                 barcodes
+                 ON
+                     product.id = barcodes.product_id
+            GROUP BY 'type',
+                     product.id,
+                     product.name,
+                     product.pathName,
+                     product.article,
+                     barcodes.ean13
+            UNION ALL
+            SELECT 'variant'                                                    AS 'type',
+                   variant.id,
+                   variant.name,
+                   product.pathName,
+                   IF(MAX(characteristics.value) IS NULL, product.article,
+                      CONCAT(product.article, ' ', MAX(characteristics.value))) AS article,
+                   barcodes.ean13,
+                   MIN(images.miniature)                                        AS miniature
+            FROM variant
+                     JOIN
+                 product
+                 ON
+                     product.id = variant.product
+                     LEFT JOIN
+                 images
+                 ON
+                     variant.id = images.variant_id
+                     LEFT JOIN
+                 characteristics
+                 ON
+                     characteristics.variant_id = variant.id
+                     LEFT JOIN
+                 barcodes
+                 ON
+                     variant.id = barcodes.variant_id
+            GROUP BY 'type',
+                     variant.id,
+                     variant.name,
+                     product.pathName,
+                     product.article,
+                     barcodes.ean13) AS components_positions
+           ON
+               components_positions.id = components.assortment
+               LEFT JOIN
+           (SELECT bundle_id,
+                   COUNT(*) AS components_count
+            FROM components
+            GROUP BY bundle_id) AS bundle_counts
+           ON
+               bundle_counts.bundle_id = bundle.id) AS assortment
+     ON
+         assortment.id = pos.assortment
+WHERE customerorder.id = '${orderId}'
+GROUP BY customerorder.id,
+         customerorder.name,
+         customerorder.created,
+         customerorder.description,
+         deliver.value,
+         assortment.pathName,
+         assortment.extraid,
+         assortment.name,
+         assortment.article,
+         assortment.ean13,
+         assortment.type,
+         assortment.miniature,
+         assortment.multiplicity,
+         pinned_docs.value
+ORDER BY article`
             const [results, fields] = await connection.execute(query);
 
             let order;
             if (results.length > 0) {
                 order = {
-                    id: results[0].demandId,
-                    name: results[0].demandName,
+                    id: results[0].orderId,
+                    name: results[0].orderName,
                     created: results[0].created,
                     delivery: results[0].delivery,
                     description: results[0].description,
@@ -1011,8 +952,7 @@ ORDER BY
                             pathName: item.pathName,
                             multiplicity: item.multiplicity
                         }
-                    }),
-                    orderName: results[0].orderName
+                    })
                 }
 
                 if (order.pinnedDoc === 'ТОРГ 12') {
@@ -1054,7 +994,7 @@ ORDER BY
 
             // console.log('ORDER BY ID', order);
             const whenNewOrderWasSendToServer = new Date().toLocaleString("ru-RU", {timeZone: "Europe/Moscow"});
-            console.log(`${whenNewOrderWasSendToServer} : ${req.user.email} : getOrderById() : ${JSON.stringify(order)}`)
+            console.log(`${whenNewOrderWasSendToServer} : ${req.user.email} : getDemandById() : ${JSON.stringify(order)}`)
             res.json(order);
         } catch (error) {
             next(error);
@@ -1065,64 +1005,24 @@ ORDER BY
         });
     }
 
-    async changeOrderStatus(req, res, next) {
-        // console.log('changeOrderStatus index')
+    async changeStatus(req, res, next) {
         try {
-            // console.log(req.params)
             const orderId = req.params.id;
             const statusName = req.body.statusName;
-            const reason = req.body.reason;
-            // console.log('new desc', newDescription);
-            const url = `https://api.moysklad.ru/api/remap/1.2/entity/demand/${orderId}`;
-            // console.log(url);
-            const statusHref = STATES.get(statusName);
-            // console.log(statusHref);
-            // console.log("CHANGE STATUS NAME ON " + statusName);
-            // console.log(url)
+            // const reason = req.body.reason;
+            const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${orderId}`;
+            const href = ORDER_STATES.get(statusName);
 
-            let result;
-            if (statusName === 'Корректировка') {
-                console.log(reason);
-                result = await $api.put(url, {
-                    state: {
-                        meta: {
-                            href: statusHref,
-                            type: 'state',
-                            mediaType: "application/json"
-                        }
-                    },
-                    attributes: [
-                        {
-                            meta: {
-                                "href": "https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/attributes/8bd78e66-ebfe-11ee-0a80-07750004a8dc",
-                                "type": "attributemetadata",
-                                "mediaType": "application/json"
-                            },
-                            value: reason
-                        }
-                    ]
-                })
-            } else {
-                result = await $api.put(url, {
-                    state: {
-                        meta: {
-                            href: statusHref,
-                            type: 'state',
-                            mediaType: "application/json"
-                        }
+            const result = await $api.put(url, {
+                state: {
+                    meta: {
+                        href,
+                        type: 'state',
+                        mediaType: "application/json"
                     }
-                });
+                },
+            })
 
-                // // order queue для упаковщиков
-                // if (req.user.position === 'Сборщик' && statusName === 'Собрано') {
-                //     console.log('добавляем в очередь упаковщика заказ', orderId);
-                //     await _addToOrderQueueForPacker(orderId);
-                // }
-            }
-
-
-            // requestCounter++;
-            // await DoNeedTimeout();
             res.json(result.data);
         } catch (error) {
             // console.log("ERROR")
@@ -1158,22 +1058,16 @@ ORDER BY
     }
 
 
-    async getOrdersByUser(req, res, next) {
-        // console.log('getOrdersByUser');
+    async getOrdersInWorkByUser(req, res, next) {
         const userEmail = req.user.email;
-        const flagNeedNewOrder = req.body.flag;
-        // console.log('params', flagNeedNewOrder);
-        // console.log('GET ORDERS BY USER', userEmail);
-
         if (userEmail === "admin") {
             return res.json([]);
         }
 
-        let result;
         try {
             const allOrdersInWorkByPosition = await _getOrdersInWorkByPosition(req);
             const userOrders = allOrdersInWorkByPosition.filter(item => item.employee === userEmail);
-            // console.log(userOrders);
+
             res.json(JSON.stringify(userOrders));
 
         } catch (error) {
@@ -1185,23 +1079,17 @@ ORDER BY
         try {
             const orderId = req.params['id'];
             const currentUsersOrders = await redisClient.hGetAll(ORDERS_IN_WORK);
-            // console.log('currentUsersOrders', currentUsersOrders);
 
             let result;
             for (let key in currentUsersOrders) {
                 const orders = JSON.parse(currentUsersOrders[key]);
                 const needToRemove = orders.find(item => item.id === orderId);
-                // console.log('orders', orders);
                 if (needToRemove) {
-                    // console.log(`order ${orderId} was removed`)
                     const updatedOrders = orders.filter(item => item.id !== orderId);
                     currentUsersOrders[key] = JSON.stringify(updatedOrders);
-                    // console.log(currentUsersOrders);
                     result = await redisClient.hSet(ORDERS_IN_WORK, key, currentUsersOrders[key]);
                 }
             }
-
-            // console.log(result);
 
             res.json(result);
         } catch (error) {
@@ -1282,8 +1170,6 @@ ORDER BY
 
             await redisClient.hSet(ORDERS_IN_WORK, type, updatedOrdersInWork);
 
-            const afterAdd = await _getOrdersInWorkByPosition(req);
-            // console.log('after adding to waiting list', afterAdd);
             res.json(updatedOrdersInWork);
         } catch (error) {
             next(error);
