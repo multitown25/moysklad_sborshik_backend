@@ -5,6 +5,8 @@
 /.pnp
 .pnp.js
 .env
+backend.log
+error_log.txt
 
 # testing
 /coverage
