@@ -21,6 +21,7 @@ class UserController {
 
     async login(req, res, next) {
         try {
+            console.log('LOGGING', req.body);
             const { email, password, position } = req.body;
             const userData = await userService.login(email, password, position);
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true })
