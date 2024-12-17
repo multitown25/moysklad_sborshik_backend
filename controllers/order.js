@@ -1,9 +1,9 @@
 const $api = require('../http/index');
-const OrderModel = require('../models/order-model');
 const config = require('../config');
 const mysql = require('mysql2/promise');
 const redisClient = require('../service/redis-client');
 const UserService = require('../service/user-service');
+const OrderService = require('../service/order-service');
 const { STATE_BY_USER_POSITION_FOR_WORK, STATE_BY_USER_POSITION_IN_WORK, ORDER_STATES } = require('../moysklad/data');
 // let ALLOW_TO_GET_NEW_ORDER = true;
 // let GIVE_NEW_ORDER = true;
@@ -357,6 +357,32 @@ async function _giveRandomOrder(req) {
     };
 }
 
+async function _addOrderToDB(userEmail, orderId, orderName) {
+    try {
+        const result = await OrderService.addToDB(userEmail, orderId, orderName);
+        console.log('Заказ успешно добавлен в базу данных!', result);
+        return result;
+
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function isOrderProcessed(orderId) {
+    try {
+        const processedOrders = await OrderService.getAllProcessedOrders();
+        if (processedOrders.find(item => item.orderId === orderId)) {
+            console.log('Заказ уже был в работе!', orderId);
+            return true;
+        }
+        console.log('Заказа нет в базе, можно работать..', orderId);
+        return false;
+
+    } catch (error) {
+        throw error;
+    }
+}
+
 async function _setOrderInWork(req, newOrder) {
     try {
         const type = STATE_BY_USER_POSITION_IN_WORK.get(req.user.position);
@@ -364,6 +390,7 @@ async function _setOrderInWork(req, newOrder) {
         allOrdersInWorkByPosition.push(newOrder);
         await redisClient.hSet(ORDERS_IN_WORK, type, JSON.stringify(allOrdersInWorkByPosition));
 
+        await _addOrderToDB(req.user.email, newOrder.id, newOrder.name);
 
         const url = `https://api.moysklad.ru/api/remap/1.2/entity/customerorder/${newOrder.id}`;
         const result = await $api.put(url, {
@@ -682,10 +709,11 @@ WHERE customerorder.name = '${orderNumber}'`
 
             const orders = await Promise.all(results.map(async (item) => {
                 const orderIsTaken = await hasOrderTaken(item, req);
+                const isProcessed = await isOrderProcessed(item.id);
 
                 return {
                     ...item,
-                    isAvailable: !orderIsTaken && item.state === STATE_BY_USER_POSITION_FOR_WORK.get(req.user.position)
+                    isAvailable: !orderIsTaken && item.state === STATE_BY_USER_POSITION_FOR_WORK.get(req.user.position) && !isProcessed
                 }
             }));
 
@@ -970,7 +998,7 @@ ORDER BY article`
                 }
                 order.positions = order.positions.filter(item => item.name != "Доставка");
                 order.positions = order.positions.map(item => {
-                    if (item.article.includes('ММБ') || item.article.includes('ПВ')) {
+                    if (item.article?.includes('ММБ') || item.article?.includes('ПВ')) {
                         item.article += ` (${item.name})`;
                     }
                     if (item.multiplicity) {

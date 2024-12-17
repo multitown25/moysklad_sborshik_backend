@@ -26,7 +26,7 @@ router.patch('/ordersinwork/:id/update_selected_rows', authMiddleware, orderCont
 router.delete('/orderinwork/:id', authMiddleware, orderController.removeOrderFromWork); // good
 
 // Demand
-router.patch('/demand/changestatus/:id', authMiddleware, demandController.changeStatus); // url = /demand/:id
+router.post('/demand/changestatus/:id', authMiddleware, demandController.changeStatus); // url = /demand/:id
 router.patch('/demand/inwork/:id/update_selected_rows', authMiddleware, demandController.updateSelectedRows); // url = /demand/inwork/:id/ OR /demand/:id/
 router.post('/demand/waitinglist', authMiddleware, demandController.addToWaitingList); // url = /demand/:id/waitinglist
 router.post('/demand/getnew', authMiddleware, demandController.getNewDemand); // url = /demand

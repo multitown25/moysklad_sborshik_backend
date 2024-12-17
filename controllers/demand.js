@@ -1010,7 +1010,7 @@ ORDER BY
                         mediaType: "application/json"
                     }
                 },
-            })
+            });
 
             res.json(result.data);
         } catch (error) {
