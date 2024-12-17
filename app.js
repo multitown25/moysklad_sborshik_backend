@@ -31,7 +31,7 @@ app.use(morgan(':date[iso] :method :url :user', { stream: accessLogStream }))
 app.use('/api', router);
 
 app.use('*', (req, res, next) => {
-    res.sendFile(path.resolve(__dirname, '../../../../var/www/build', 'index.html'));
+    res.sendFile(path.resolve(__dirname, '../../../../var/www/sborshikapp.flx-it.ru', 'index.html'));
 });
 
 app.use(errorMiddleware);
