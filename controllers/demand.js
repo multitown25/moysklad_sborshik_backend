@@ -590,7 +590,7 @@ ORDER BY article`
                         // console.log(results);
 
                         for (let i = 0; i < results.length; i++) {
-                            if (results[i].pathName.toLowerCase().endsWith('масла') || results[i].pathName.toLowerCase().endsWith('масла под заказ')) {
+                            if (results[i].pathName?.toLowerCase().endsWith('масла') || results[i].pathName?.toLowerCase().endsWith('масла под заказ')) {
                                 // console.log(results[i].assortmentName + 'TRUE');
                                 newOrder.selectedPositions[results[i].assortmentId] = true
                             }
