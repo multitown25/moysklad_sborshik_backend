@@ -1,6 +1,8 @@
 const axios = require('axios');
+const path = require('path');
+require('dotenv').config({path: __dirname + '/.env'});
 
-const tokenMS = '4fbe404d88f9d1a5409c23b6f37e8693355b999e';
+const tokenMS = process.env.TOKEN_MS;
 
 const $api = axios.create({
     withCredentials: true
