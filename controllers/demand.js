@@ -358,7 +358,7 @@ async function _setOrderInWork(req, newOrder) {
 
 
         const url = `https://api.moysklad.ru/api/remap/1.2/entity/demand/${newOrder.id}`;
-        const nextStatus = "https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/states/4a52ef52-41ff-11ec-0a80-02d0001cfb4d"; // На упаковке
+        const nextStatus = DEMAND_STATES.get('На упаковке'); // На упаковке
         const result = await $api.put(url, {
             state: {
                 meta: {
