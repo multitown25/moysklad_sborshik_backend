@@ -4,7 +4,7 @@ const config = require('../config');
 const mysql = require('mysql2/promise');
 const redisClient = require('../service/redis-client');
 const UserService = require('../service/user-service');
-const { STATE_BY_USER_POSITION_FOR_WORK, STATE_BY_USER_POSITION_IN_WORK, DEMAND_STATES } = require('../moysklad/data');
+const { STATE_BY_USER_POSITION_FOR_WORK, STATE_BY_USER_POSITION_IN_WORK, DEMAND_STATES, POSITIONS_HREFS} = require('../moysklad/data');
 // let ALLOW_TO_GET_NEW_ORDER = true;
 // let GIVE_NEW_ORDER = true;
 
@@ -409,11 +409,12 @@ async function _changeOrderBody(demandId, email, position) {
     try {
         // console.log(req.params)
         const demandUrl = `https://api.moysklad.ru/api/remap/1.2/entity/demand/${demandId}`;
+        const upakovshikHref = POSITIONS_HREFS.get('Упаковщик');
         const updateDemand = await $api.put(demandUrl, {
             attributes: [
                 {
                     meta: {
-                        "href": "https://api.moysklad.ru/api/remap/1.2/entity/demand/metadata/attributes/46bbb4eb-0c1f-11ef-0a80-037a0002bd44", // Доп поле "Упаковщик"
+                        "href": upakovshikHref, // Доп поле "Упаковщик"
                         "type": "attributemetadata",
                         "mediaType": "application/json"
                     },
