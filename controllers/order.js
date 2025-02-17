@@ -396,7 +396,7 @@ async function _setOrderInWork(req, newOrder) {
         const result = await $api.put(url, {
             state: {
                 meta: {
-                    href: "https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/states/e8b38a07-ab8e-11ed-0a80-04fb003bf463", // На сборке
+                    href: "https://api.moysklad.ru/api/remap/1.2/entity/customerorder/metadata/states/5be16e1c-b7b6-11ef-0a80-114c001ec82a", // На сборке
                     type: 'state',
                     mediaType: "application/json"
                 }
