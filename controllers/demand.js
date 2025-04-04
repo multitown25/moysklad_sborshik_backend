@@ -86,7 +86,7 @@ async function _getAllOrders(req) {
             return item;
         });
     });
-    return result;
+    return result.filter(item => item.valid === true);
 }
 
 //
