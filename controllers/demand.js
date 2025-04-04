@@ -79,7 +79,13 @@ async function _getAllOrders(req) {
     }
     // console.log(result)
     const neededStatus = STATE_BY_USER_POSITION_FOR_WORK.get(req.user.position);
-    const result = await _getAllOrdersDBQuery(neededStatus);
+    const result = await _getAllOrdersDBQuery(neededStatus).then(results => {
+        return results.map(item => {
+            // console.log(item);
+            item.valid = !item.serviceNames || item.positionNames.split(',').length > 1;
+            return item;
+        });
+    });
     return result;
 }
 
@@ -137,29 +143,36 @@ WHERE store.name = 'Казань, склад А'
   AND states.name IN ('Розлив', 'Готов к сборке', 'На сборке', 'Собрано', 'На упаковке', 'Упаковано', 'Корректировка')`
     } else {
         query = `SELECT demand.id,
-       demand.name,
-       demand.created,
-       deliver.value  AS 'Способ доставки NEW',
-       demand.description,
-       priority.value AS priority,
-       sborshik.value AS sborshik,
-       customerorder.name as customerorderName
-FROM demand
-         LEFT JOIN
-     demand_attributes deliver ON deliver.demand_id = demand.id AND deliver.name = 'Способ доставки NEW'
-         JOIN
-     states ON states.id = demand.state
-         JOIN
-     store ON store.id = demand.store
-         LEFT JOIN
-     demand_attributes priority ON priority.demand_id = demand.id AND priority.name = 'Приоритетно'
-         LEFT JOIN
-     demand_attributes sborshik ON sborshik.demand_id = demand.id AND sborshik.name = 'Сборщик'
-     LEFT JOIN
-    customerorder ON demand.customerOrder = customerorder.id
-WHERE store.name = 'Казань, склад А'
-  AND demand.deleted IS NULL
-  AND states.name = '${status}'`
+                        demand.name,
+                        demand.created,
+                        deliver.value      AS 'Способ доставки NEW',
+                         demand.description,
+                        priority.value     AS priority,
+                        sborshik.value     AS sborshik,
+                        customerorder.name as customerorderName,
+                        GROUP_CONCAT(DISTINCT service.name ORDER BY service.name SEPARATOR ', ') AS serviceNames,
+                        GROUP_CONCAT(DISTINCT demand_positions.assortment ORDER BY demand_positions.assortment SEPARATOR ', ') AS positionNames
+                 FROM demand
+                          LEFT JOIN
+                      demand_attributes deliver ON deliver.demand_id = demand.id AND deliver.name = 'Способ доставки NEW'
+                          JOIN
+                      states ON states.id = demand.state
+                          JOIN
+                      store ON store.id = demand.store
+                          LEFT JOIN
+                      demand_attributes priority ON priority.demand_id = demand.id AND priority.name = 'Приоритетно'
+                          LEFT JOIN
+                      demand_attributes sborshik ON sborshik.demand_id = demand.id AND sborshik.name = 'Сборщик'
+                          LEFT JOIN
+                      demand_positions ON demand.id = demand_positions.demand_id
+                          LEFT JOIN
+                      customerorder ON demand.customerOrder = customerorder.id
+                          LEFT JOIN
+                      service ON service.id = demand_positions.assortment
+                 WHERE store.name = 'Казань, склад А'
+                   AND demand.deleted IS NULL
+                   AND states.name = '${status}'
+                 GROUP BY demand.id, demand.name, demand.created, deliver.value, demand.description, priority.value, sborshik.value, customerorder.name`
     }
     const connection = await mysql.createConnection(config.db);
     const [results, fields] = await connection.execute(query);
