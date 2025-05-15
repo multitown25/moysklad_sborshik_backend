@@ -998,6 +998,21 @@ ORDER BY article`
                     // console.log('TORG 12');
                     console.log(order.positions[order.positions.length - 1]);
                 }
+
+                if (order.pinnedDoc === 'УПД') {
+                    order.positions.push({
+                        id: 'upd_doc_like_position',
+                        name: 'УПД',
+                        article: 'УПД',
+                        type: 'doc',
+                        image: '',
+                        pathName: '',
+                        multiplicity: null
+                    });
+                    // console.log('TORG 12');
+                    console.log(order.positions[order.positions.length - 1]);
+                }
+
                 order.positions = order.positions.filter(item => item.name != "Доставка");
                 order.positions = order.positions.map(item => {
                     if (item.article?.includes('ММБ') || item.article?.includes('ПВ')) {
