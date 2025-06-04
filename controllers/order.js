@@ -105,7 +105,7 @@ LEFT JOIN
     customerorder_attributes deliver ON deliver.customerorder_id = customerorder.id AND deliver.name = 'Способ доставки NEW'
 JOIN
     states ON states.id = customerorder.state
-JOIN
+LEFT JOIN
     store ON store.id = customerorder.store
 LEFT JOIN
     customerorder_attributes priority ON priority.customerorder_id = customerorder.id AND priority.name = 'Приоритетно'
