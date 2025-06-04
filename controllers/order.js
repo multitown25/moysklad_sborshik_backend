@@ -749,216 +749,215 @@ WHERE customerorder.name = '${orderNumber}'`
             });
             await redisClient.hSet(ORDERS_IN_WORK, STATE_BY_USER_POSITION_IN_WORK.get(req.user.position), JSON.stringify(updateCache));
 
-            const query = `SELECT customerorder.id    AS 'orderId',
-       customerorder.name  AS 'orderName',
-       customerorder.created,
-       customerorder.description,
-       pinned_docs.value   as pinnedDoc,
-       deliver.value       AS 'delivery',
-       assortment.pathName AS 'pathName',
-       assortment.extraid  AS 'assortmentId',
-       assortment.name     AS 'assortmentName',
-       assortment.article,
-       sum(pos.quantity)   as quantity,
-       assortment.ean13,
-       assortment.type,
-       assortment.miniature,
-       assortment.multiplicity
-FROM customerorder
-         LEFT JOIN
-     customerorder_attributes pinned_docs
-     ON
-         pinned_docs.customerorder_id = customerorder.id
-             AND pinned_docs.name = 'Закрывающие документы'
-         LEFT JOIN
-     customerorder_attributes deliver
-     ON
-         deliver.customerorder_id = customerorder.id
-             AND deliver.name = 'Способ доставки NEW'
+            const query = `SELECT customerorder.id AS 'orderId', customerorder.name AS 'orderName', customerorder.created,
+                                  customerorder.description,
+                                  pinned_docs.value   as pinnedDoc,
+                                  extra_product.value as extraProduct,
+                                  deliver.value AS 'delivery', assortment.pathName AS 'pathName', assortment.extraid AS 'assortmentId', assortment.name AS 'assortmentName', assortment.article,
+                                  sum(pos.quantity)   as quantity,
+                                  assortment.ean13,
+                                  assortment.type,
+                                  assortment.miniature,
+                                  assortment.multiplicity
+                           FROM customerorder
+                                    LEFT JOIN
+                                customerorder_attributes pinned_docs
+                                ON
+                                    pinned_docs.customerorder_id = customerorder.id
+                                        AND pinned_docs.name = 'Закрывающие документы'
+                                    LEFT JOIN
+                                customerorder_attributes extra_product
+                                ON
+                                    extra_product.customerorder_id = customerorder.id
+                                        AND extra_product.name = 'Доп. товар'
+                                    LEFT JOIN
+                                customerorder_attributes deliver
+                                ON
+                                    deliver.customerorder_id = customerorder.id
+                                        AND deliver.name = 'Способ доставки NEW'
 
-         JOIN
-     customerorder_positions pos
-     ON
-         customerorder.id = pos.customerorder_id
-         LEFT JOIN
-     (SELECT 'product'          AS 'type',
-             product.id,
-             product.id         as extraid,
-             product.name,
-             product.pathName,
-             product.article,
-             barcodes.ean13,
-             images.miniature   AS miniature,
-             multiplicity.value as multiplicity
-      FROM product
-               LEFT JOIN
-           (SELECT images.product_id,
-                   min(images.miniature) as miniature
-            FROM images
-            GROUP BY images.product_id) AS images
-           ON
-               product.id = images.product_id
-               LEFT JOIN
-           product_attributes multiplicity
-           ON
-               product.id = multiplicity.product_id
-                   AND multiplicity.name = 'Кратность заказа'
-               LEFT JOIN
-           barcodes
-           ON
-               product.id = barcodes.product_id
-      UNION ALL
-      SELECT 'variant'                                                    AS 'type',
-             variant.id,
-             variant.id                                                   as extraid,
-             variant.name,
-             product.pathName,
-             IF(MAX(characteristics.value) IS NULL, product.article,
-                CONCAT(product.article, ' ', MAX(characteristics.value))) AS article,
-             barcodes.ean13,
-             images.miniature                                             AS miniature,
-             multiplicity.value                                           as multiplicity
-      FROM variant
-               JOIN
-           product
-           ON
-               product.id = variant.product
-               LEFT JOIN
-           (SELECT images.variant_id,
-                   min(images.miniature) as miniature
-            FROM images
-            GROUP BY images.variant_id) AS images
-           ON
-               variant.id = images.variant_id
-               LEFT JOIN
-           characteristics
-           ON
-               characteristics.variant_id = variant.id
-               LEFT JOIN
-           barcodes
-           ON
-               variant.id = barcodes.variant_id
-               LEFT JOIN
-           product_attributes multiplicity
-           ON
-               product.id = multiplicity.product_id
-                   AND multiplicity.name = 'Кратность заказа'
-      GROUP BY variant.id,
-               variant.name,
-               product.pathName,
-               product.article,
-               barcodes.ean13,
-               images.miniature,
-               multiplicity.value
-      UNION ALL
-      SELECT 'bundle'           AS 'type',
-             bundle.id,
-             IF(bundle_counts.components_count = 1, bundle.id, components_positions.id),
-             IF(bundle_counts.components_count = 1, bundle.name, components_positions.name),
-             IF(bundle_counts.components_count = 1, bundle.pathName, components_positions.pathName),
-             IF(bundle_counts.components_count = 1, bundle.article, components_positions.article),
-             components_positions.ean13,
-             IF(bundle_counts.components_count = 1, images.miniature, components_positions.miniature),
-             multiplicity.value as multiplicity
-      FROM bundle
-               LEFT JOIN
-           (SELECT images.bundle_id,
-                   MIN(images.miniature) AS miniature
-            FROM images
-            GROUP BY images.bundle_id) AS images
-           ON
-               bundle.id = images.bundle_id
-               LEFT JOIN
-           bundle_attributes multiplicity
-           ON
-               bundle.id = multiplicity.bundle_id
-                   AND multiplicity.name = 'Кратность заказа'
-               JOIN
-           components
-           ON
-               bundle.id = components.bundle_id
-               JOIN
-           (SELECT 'product'             AS 'type',
-                   product.id,
-                   product.name,
-                   product.pathName,
-                   product.article,
-                   barcodes.ean13,
-                   MIN(images.miniature) AS miniature
-            FROM product
-                     LEFT JOIN
-                 images
-                 ON
-                     product.id = images.product_id
-                     LEFT JOIN
-                 barcodes
-                 ON
-                     product.id = barcodes.product_id
-            GROUP BY 'type',
-                     product.id,
-                     product.name,
-                     product.pathName,
-                     product.article,
-                     barcodes.ean13
-            UNION ALL
-            SELECT 'variant'                                                    AS 'type',
-                   variant.id,
-                   variant.name,
-                   product.pathName,
-                   IF(MAX(characteristics.value) IS NULL, product.article,
-                      CONCAT(product.article, ' ', MAX(characteristics.value))) AS article,
-                   barcodes.ean13,
-                   MIN(images.miniature)                                        AS miniature
-            FROM variant
-                     JOIN
-                 product
-                 ON
-                     product.id = variant.product
-                     LEFT JOIN
-                 images
-                 ON
-                     variant.id = images.variant_id
-                     LEFT JOIN
-                 characteristics
-                 ON
-                     characteristics.variant_id = variant.id
-                     LEFT JOIN
-                 barcodes
-                 ON
-                     variant.id = barcodes.variant_id
-            GROUP BY 'type',
-                     variant.id,
-                     variant.name,
-                     product.pathName,
-                     product.article,
-                     barcodes.ean13) AS components_positions
-           ON
-               components_positions.id = components.assortment
-               LEFT JOIN
-           (SELECT bundle_id,
-                   COUNT(*) AS components_count
-            FROM components
-            GROUP BY bundle_id) AS bundle_counts
-           ON
-               bundle_counts.bundle_id = bundle.id) AS assortment
-     ON
-         assortment.id = pos.assortment
-WHERE customerorder.id = '${orderId}'
-GROUP BY customerorder.id,
-         customerorder.name,
-         customerorder.created,
-         customerorder.description,
-         deliver.value,
-         assortment.pathName,
-         assortment.extraid,
-         assortment.name,
-         assortment.article,
-         assortment.ean13,
-         assortment.type,
-         assortment.miniature,
-         assortment.multiplicity,
-         pinned_docs.value
-ORDER BY article`
+                                    JOIN
+                                customerorder_positions pos
+                                ON
+                                    customerorder.id = pos.customerorder_id
+                                    LEFT JOIN
+                                (SELECT 'product' AS 'type', product.id,
+                                        product.id         as extraid,
+                                        product.name,
+                                        product.pathName,
+                                        product.article,
+                                        barcodes.ean13,
+                                        images.miniature   AS miniature,
+                                        multiplicity.value as multiplicity
+                                 FROM product
+                                          LEFT JOIN
+                                      (SELECT images.product_id,
+                                              min(images.miniature) as miniature
+                                       FROM images
+                                       GROUP BY images.product_id) AS images
+                                      ON
+                                          product.id = images.product_id
+                                          LEFT JOIN
+                                      product_attributes multiplicity
+                                      ON
+                                          product.id = multiplicity.product_id
+                                              AND multiplicity.name = 'Кратность заказа'
+                                          LEFT JOIN
+                                      barcodes
+                                      ON
+                                          product.id = barcodes.product_id
+                                 UNION ALL
+                                 SELECT 'variant' AS 'type', variant.id,
+                                        variant.id                                                   as extraid,
+                                        variant.name,
+                                        product.pathName,
+                                        IF(MAX(characteristics.value) IS NULL, product.article,
+                                           CONCAT(product.article, ' ', MAX(characteristics.value))) AS article,
+                                        barcodes.ean13,
+                                        images.miniature                                             AS miniature,
+                                        multiplicity.value                                           as multiplicity
+                                 FROM variant
+                                          JOIN
+                                      product
+                                      ON
+                                          product.id = variant.product
+                                          LEFT JOIN
+                                      (SELECT images.variant_id,
+                                              min(images.miniature) as miniature
+                                       FROM images
+                                       GROUP BY images.variant_id) AS images
+                                      ON
+                                          variant.id = images.variant_id
+                                          LEFT JOIN
+                                      characteristics
+                                      ON
+                                          characteristics.variant_id = variant.id
+                                          LEFT JOIN
+                                      barcodes
+                                      ON
+                                          variant.id = barcodes.variant_id
+                                          LEFT JOIN
+                                      product_attributes multiplicity
+                                      ON
+                                          product.id = multiplicity.product_id
+                                              AND multiplicity.name = 'Кратность заказа'
+                                 GROUP BY variant.id,
+                                          variant.name,
+                                          product.pathName,
+                                          product.article,
+                                          barcodes.ean13,
+                                          images.miniature,
+                                          multiplicity.value
+                                 UNION ALL
+                                 SELECT 'bundle' AS 'type', bundle.id,
+                                        IF(bundle_counts.components_count = 1, bundle.id, components_positions.id),
+                                        IF(bundle_counts.components_count = 1, bundle.name, components_positions.name),
+                                        IF(bundle_counts.components_count = 1, bundle.pathName,
+                                           components_positions.pathName),
+                                        IF(bundle_counts.components_count = 1, bundle.article,
+                                           components_positions.article),
+                                        components_positions.ean13,
+                                        IF(bundle_counts.components_count = 1, images.miniature,
+                                           components_positions.miniature),
+                                        multiplicity.value as multiplicity
+                                 FROM bundle
+                                          LEFT JOIN
+                                      (SELECT images.bundle_id,
+                                              MIN(images.miniature) AS miniature
+                                       FROM images
+                                       GROUP BY images.bundle_id) AS images
+                                      ON
+                                          bundle.id = images.bundle_id
+                                          LEFT JOIN
+                                      bundle_attributes multiplicity
+                                      ON
+                                          bundle.id = multiplicity.bundle_id
+                                              AND multiplicity.name = 'Кратность заказа'
+                                          JOIN
+                                      components
+                                      ON
+                                          bundle.id = components.bundle_id
+                                          JOIN
+                                      (SELECT 'product' AS 'type', product.id,
+                                              product.name,
+                                              product.pathName,
+                                              product.article,
+                                              barcodes.ean13,
+                                              MIN(images.miniature) AS miniature
+                                       FROM product
+                                                LEFT JOIN
+                                            images
+                                            ON
+                                                product.id = images.product_id
+                                                LEFT JOIN
+                                            barcodes
+                                            ON
+                                                product.id = barcodes.product_id
+                                       GROUP BY 'type',
+                                                product.id,
+                                                product.name,
+                                                product.pathName,
+                                                product.article,
+                                                barcodes.ean13
+                                       UNION ALL
+                                       SELECT 'variant' AS 'type', variant.id,
+                                              variant.name,
+                                              product.pathName,
+                                              IF(MAX(characteristics.value) IS NULL, product.article,
+                                                 CONCAT(product.article, ' ', MAX(characteristics.value))) AS article,
+                                              barcodes.ean13,
+                                              MIN(images.miniature)                                        AS miniature
+                                       FROM variant
+                                                JOIN
+                                            product
+                                            ON
+                                                product.id = variant.product
+                                                LEFT JOIN
+                                            images
+                                            ON
+                                                variant.id = images.variant_id
+                                                LEFT JOIN
+                                            characteristics
+                                            ON
+                                                characteristics.variant_id = variant.id
+                                                LEFT JOIN
+                                            barcodes
+                                            ON
+                                                variant.id = barcodes.variant_id
+                                       GROUP BY 'type',
+                                                variant.id,
+                                                variant.name,
+                                                product.pathName,
+                                                product.article,
+                                                barcodes.ean13) AS components_positions
+                                      ON
+                                          components_positions.id = components.assortment
+                                          LEFT JOIN
+                                      (SELECT bundle_id,
+                                              COUNT(*) AS components_count
+                                       FROM components
+                                       GROUP BY bundle_id) AS bundle_counts
+                                      ON
+                                          bundle_counts.bundle_id = bundle.id) AS assortment
+                                ON
+                                    assortment.id = pos.assortment
+                           WHERE customerorder.id = '${orderId}'
+                           GROUP BY customerorder.id,
+                                    customerorder.name,
+                                    customerorder.created,
+                                    customerorder.description,
+                                    deliver.value,
+                                    assortment.pathName,
+                                    assortment.extraid,
+                                    assortment.name,
+                                    assortment.article,
+                                    assortment.ean13,
+                                    assortment.type,
+                                    assortment.miniature,
+                                    assortment.multiplicity,
+                                    pinned_docs.value,
+                                    extra_product.value
+                           ORDER BY article`
             const [results, fields] = await connection.execute(query);
 
             let order;
@@ -970,6 +969,7 @@ ORDER BY article`
                     delivery: results[0].delivery,
                     description: results[0].description,
                     pinnedDoc: results[0].pinnedDoc,
+                    extraProduct: results[0].extraProduct,
                     positions: results.map(item => {
                         return {
                             id: item.assortmentId,
@@ -1005,6 +1005,20 @@ ORDER BY article`
                         name: 'УПД',
                         article: 'УПД',
                         type: 'doc',
+                        image: '',
+                        pathName: '',
+                        multiplicity: null
+                    });
+                    // console.log('TORG 12');
+                    console.log(order.positions[order.positions.length - 1]);
+                }
+
+                if (order.extraProduct === 'Подарок') {
+                    order.positions.push({
+                        id: 'extra_present_like_position',
+                        name: 'Подарок',
+                        article: 'Подарок',
+                        type: 'extra_product',
                         image: '',
                         pathName: '',
                         multiplicity: null
