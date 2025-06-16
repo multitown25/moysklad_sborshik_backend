@@ -912,6 +912,7 @@ ORDER BY article`
                     delivery: results[0].delivery,
                     description: results[0].description,
                     pinnedDoc: results[0].pinnedDoc,
+                    extraProduct: results[0].extraProduct,
                     positions: results.map(item => {
                         return {
                             id: item.assortmentId,
